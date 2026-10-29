@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#24452F">
+<title>Bananadas · Controle de vendas</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F1F3EC;--surf:#fff;--ink:#1B2A20;--mut:#5F6F63;--line:#D9DECF;--brand:#24452F;--onbrand:#fff;--acc:#E9A800;--onacc:#2B1D00;--danger:#B3261E;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#121A15;--surf:#1B261F;--ink:#EAF0E6;--mut:#9DAE9F;--line:#2E3D33;--brand:#3C7350;--acc:#F2B91A;--danger:#FF8A80}}
+*{box-sizing:border-box}
+html{height:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:16px/1.4 "Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif}
+#app{max-width:560px;margin:0 auto;padding:0 16px 150px}
+header{padding:20px 0 12px;display:flex;justify-content:space-between;align-items:flex-start}
+h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}
+.sub{color:var(--mut);margin:2px 0 0;font-size:14px}
+.card{background:var(--surf);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;display:flex;gap:12px;align-items:center;justify-content:space-between;cursor:pointer}
+.card b{display:block;font-weight:600}
+.card small{color:var(--mut);display:block}
+.val{font-weight:800;white-space:nowrap}
+.empty{color:var(--mut);text-align:center;padding:48px 16px;border:1.5px dashed var(--line);border-radius:14px;margin-top:16px}
+.sum{background:var(--brand);color:var(--onbrand);border-radius:14px;padding:16px;display:flex;justify-content:space-between;align-items:end}
+.sum span{opacity:.8;font-size:14px}.sum strong{font-size:26px;font-weight:800}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--surf);border-top:1px solid var(--line);display:flex;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;background:none;border:0;color:var(--mut);font:600 14px inherit;font-family:inherit;padding:10px 4px;border-radius:10px}
+nav button.on{color:var(--brand);background:color-mix(in srgb,var(--acc) 22%,transparent)}
+@media (prefers-color-scheme:dark){nav button.on{color:var(--acc)}}
+.fab{position:fixed;right:16px;bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--acc);color:var(--onacc);border:0;border-radius:28px;padding:14px 22px;font:800 16px inherit;font-family:inherit;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:92%;overflow:auto;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px))}
+.sheet h2{margin:0 0 12px;font-size:22px;font-weight:800}
+label{display:block;font-size:14px;color:var(--mut);margin:12px 0 4px}
+input,select{width:100%;font:inherit;font-size:16px;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--surf);color:var(--ink)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.row{display:flex;gap:8px}.row>*{min-width:0}
+.btn{width:100%;margin-top:16px;padding:14px;border:0;border-radius:12px;font:800 16px inherit;font-family:inherit;background:var(--brand);color:var(--onbrand)}
+.btn:disabled{opacity:.6}
+.btn.sec{background:transparent;color:var(--ink);border:1px solid var(--line);margin-top:8px}
+.btn.del{background:transparent;color:var(--danger);border:1px solid var(--danger);margin-top:8px}
+.item{background:var(--surf);border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0}
+.item .row{margin-top:6px}
+.tot{display:flex;justify-content:space-between;font-size:20px;font-weight:800;margin-top:16px}
+.x{background:none;border:0;color:var(--danger);font:600 14px inherit;font-family:inherit;padding:6px 0}
+.x.g{color:var(--mut)}
+.ln{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);gap:8px}
+.login{max-width:400px;margin:12vh auto 0}
+.err{color:var(--danger);font-size:14px;min-height:20px;margin-top:8px}
+</style>
+</head>
+<body>
+<div id="app"><div class="empty">Carregando…</div></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const brl=n=>(+n||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const maskCnpj=v=>{v=v.replace(/\D/g,"").slice(0,14);return v.replace(/^(\d{2})(\d)/,"$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3").replace(/\.(\d{3})(\d)/,".$1/$2").replace(/(\d{4})(\d)/,"$1-$2")};
+const UNITS=["un","kg","g","pacote","caixa","barra"];
+const TITLES={orders:["Pedidos","vendas registradas"],clients:["Clientes","empresas cadastradas"],products:["Produtos","itens à venda"]};
+const TABLE={clients:"clientes",products:"produtos",orders:"pedidos"};
+let S={clients:[],products:[],orders:[]},tab="orders",draft=null,sb=null;
+
+// ---------- Supabase ----------
+const must=r=>{if(r.error){alert("Erro: "+r.error.message);throw r.error}return r};
+async function boot(){
+  const c=window.CONFIG||{};
+  if(!c.SUPABASE_URL||c.SUPABASE_URL.startsWith("COLE")){$("#app").innerHTML='<div class="empty">Configure o arquivo config.js com a URL e a chave do Supabase.</div>';return}
+  sb=supabase.createClient(c.SUPABASE_URL,c.SUPABASE_KEY);
+  const {data}=await sb.auth.getSession();
+  data.session?start():loginView();
+}
+async function start(){
+  try{await loadAll()}catch(e){return}
+  render();
+}
+async function loadAll(){
+  const [c,p,o]=(await Promise.all([
+    sb.from("clientes").select("*").order("nome"),
+    sb.from("produtos").select("*").order("nome"),
+    sb.from("pedidos").select("*, itens_pedido(*)").order("criado_em",{ascending:false})
+  ])).map(must);
+  S.clients=c.data.map(x=>({id:x.id,name:x.nome,cnpj:x.cnpj||"",address:x.endereco||""}));
+  S.products=p.data.map(x=>({id:x.id,name:x.nome,unit:x.unidade,price:+x.valor}));
+  S.orders=o.data.map(x=>({id:x.id,date:x.criado_em,clientId:x.cliente_id,clientName:x.cliente_nome,total:+x.total,
+    items:x.itens_pedido.map(i=>({name:i.produto_nome,unit:i.unidade,qty:+i.quantidade,price:+i.valor_unitario}))}));
+}
+function loginView(){
+  $("#app").innerHTML=`<div class="login"><h1>Bananadas</h1><p class="sub">Entre para ver suas vendas.</p>
+  <label>E-mail</label><input id="em" type="email" autocomplete="username">
+  <label>Senha</label><input id="pw" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+  <div class="err" id="er"></div><button class="btn" onclick="login()">Entrar</button></div>`;
+}
+async function login(){
+  const {error}=await sb.auth.signInWithPassword({email:$("#em").value.trim(),password:$("#pw").value});
+  if(error){$("#er").textContent="E-mail ou senha incorretos.";return}
+  start();
+}
+async function logout(){await sb.auth.signOut();S={clients:[],products:[],orders:[]};loginView()}
+
+// ---------- Telas ----------
+function render(){
+  const [t,s]=TITLES[tab];let body="";
+  if(tab==="orders"){
+    const total=S.orders.reduce((a,o)=>a+o.total,0);
+    body=`<div class="sum"><span>Total vendido<br>${S.orders.length} pedido(s)</span><strong>${brl(total)}</strong></div>`+
+      (S.orders.length?S.orders.map(o=>`<div class="card" onclick="viewOrder('${o.id}')"><div><b>${esc(o.clientName)}</b><small>${new Date(o.date).toLocaleDateString("pt-BR")} · ${o.items.length} item(ns)</small></div><span class="val">${brl(o.total)}</span></div>`).join(""):`<div class="empty">Nenhum pedido ainda.<br>Toque em “Novo” para registrar a primeira venda.</div>`);
+  }else if(tab==="clients"){
+    body=S.clients.length?S.clients.map(c=>`<div class="card" onclick="clientForm('${c.id}')"><div><b>${esc(c.name)}</b><small>${esc(c.cnpj)}</small><small>${esc(c.address)}</small></div></div>`).join(""):`<div class="empty">Nenhum cliente cadastrado.</div>`;
+  }else{
+    body=S.products.length?S.products.map(p=>`<div class="card" onclick="productForm('${p.id}')"><div><b>${esc(p.name)}</b><small>por ${esc(p.unit)}</small></div><span class="val">${brl(p.price)}</span></div>`).join(""):`<div class="empty">Nenhum produto cadastrado.</div>`;
+  }
+  $("#app").innerHTML=`<header><div><h1>${t}</h1><p class="sub">${s}</p></div><button class="x g" onclick="logout()">Sair</button></header>${body}
+  <button class="fab" onclick="newItem()">+ Novo</button>
+  <nav>${[["orders","Pedidos"],["clients","Clientes"],["products","Produtos"]].map(([k,l])=>`<button class="${tab===k?"on":""}" onclick="go('${k}')">${l}</button>`).join("")}</nav>`;
+}
+function go(t){tab=t;render();scrollTo(0,0)}
+function newItem(){tab==="orders"?orderForm():tab==="clients"?clientForm():productForm()}
+function sheet(html){closeSheet();const d=document.createElement("div");d.className="ov";d.id="ov";d.innerHTML=`<div class="sheet">${html}</div>`;d.onclick=e=>{if(e.target===d)closeSheet()};document.body.appendChild(d)}
+function closeSheet(){const o=$("#ov");if(o)o.remove()}
+async function done(){closeSheet();await loadAll();render()}
+function busy(b){document.querySelectorAll(".sheet .btn").forEach(x=>x.disabled=b)}
+
+function clientForm(id){
+  const c=S.clients.find(x=>x.id===id)||{name:"",cnpj:"",address:""};
+  sheet(`<h2>${id?"Editar cliente":"Novo cliente"}</h2>
+  <label>Nome do cliente</label><input id="f1" value="${esc(c.name)}" autocomplete="off">
+  <label>CNPJ</label><input id="f2" value="${esc(c.cnpj)}" inputmode="numeric" placeholder="00.000.000/0000-00" oninput="this.value=maskCnpj(this.value)">
+  <label>Endereço</label><input id="f3" value="${esc(c.address)}" autocomplete="off">
+  <button class="btn" onclick="saveClient('${id||""}')">Salvar cliente</button>
+  ${id?`<button class="btn del" onclick="del('clients','${id}')">Excluir cliente</button>`:""}
+  <button class="btn sec" onclick="closeSheet()">Cancelar</button>`);
+}
+async function saveClient(id){
+  const nome=$("#f1").value.trim();if(!nome)return alert("Informe o nome do cliente.");
+  const d={nome,cnpj:$("#f2").value.trim(),endereco:$("#f3").value.trim()};
+  busy(true);
+  try{must(id?await sb.from("clientes").update(d).eq("id",id):await sb.from("clientes").insert(d));await done()}catch(e){busy(false)}
+}
+function productForm(id){
+  const p=S.products.find(x=>x.id===id)||{name:"",unit:"un",price:""};
+  sheet(`<h2>${id?"Editar produto":"Novo produto"}</h2>
+  <label>Nome do produto</label><input id="f1" value="${esc(p.name)}" autocomplete="off">
+  <div class="row"><div style="flex:1"><label>Unidade</label><select id="f2">${UNITS.map(u=>`<option ${u===p.unit?"selected":""}>${u}</option>`).join("")}</select></div>
+  <div style="flex:1"><label>Valor de venda (R$)</label><input id="f3" type="number" inputmode="decimal" step="0.01" min="0" value="${p.price}"></div></div>
+  <button class="btn" onclick="saveProduct('${id||""}')">Salvar produto</button>
+  ${id?`<button class="btn del" onclick="del('products','${id}')">Excluir produto</button>`:""}
+  <button class="btn sec" onclick="closeSheet()">Cancelar</button>`);
+}
+async function saveProduct(id){
+  const nome=$("#f1").value.trim(),valor=parseFloat($("#f3").value);
+  if(!nome)return alert("Informe o nome do produto.");
+  if(isNaN(valor)||valor<0)return alert("Informe o valor de venda.");
+  const d={nome,unidade:$("#f2").value,valor};
+  busy(true);
+  try{must(id?await sb.from("produtos").update(d).eq("id",id):await sb.from("produtos").insert(d));await done()}catch(e){busy(false)}
+}
+async function del(k,id){
+  if(!confirm("Excluir este cadastro? Pedidos já feitos não são alterados."))return;
+  try{must(await sb.from(TABLE[k]).delete().eq("id",id));await done()}catch(e){}
+}
+
+function orderForm(){
+  if(!S.clients.length){tab="clients";render();return alert("Cadastre um cliente antes de criar um pedido.")}
+  if(!S.products.length){tab="products";render();return alert("Cadastre um produto antes de criar um pedido.")}
+  draft={clientId:S.clients[0].id,items:[{pid:S.products[0].id,qty:1,price:S.products[0].price}]};
+  drawOrder();
+}
+function drawOrder(){
+  sheet(`<h2>Novo pedido</h2>
+  <label>Cliente</label><select onchange="draft.clientId=this.value">${S.clients.map(c=>`<option value="${c.id}" ${c.id===draft.clientId?"selected":""}>${esc(c.name)}</option>`).join("")}</select>
+  <label>Produtos da venda</label>
+  ${draft.items.map((it,i)=>`<div class="item">
+    <select onchange="pickProd(${i},this.value)">${S.products.map(p=>`<option value="${p.id}" ${p.id===it.pid?"selected":""}>${esc(p.name)} (${esc(p.unit)})</option>`).join("")}</select>
+    <div class="row"><div style="flex:1"><label>Qtd.</label><input type="number" inputmode="decimal" min="0" step="any" value="${it.qty}" oninput="draft.items[${i}].qty=parseFloat(this.value)||0;upd()"></div>
+    <div style="flex:1"><label>Valor unitário</label><input type="number" inputmode="decimal" min="0" step="0.01" value="${it.price}" oninput="draft.items[${i}].price=parseFloat(this.value)||0;upd()"></div></div>
+    <div class="row" style="justify-content:space-between;align-items:center"><span class="sub">Subtotal: <b id="sb${i}">${brl(it.qty*it.price)}</b></span>${draft.items.length>1?`<button class="x" onclick="draft.items.splice(${i},1);drawOrder()">Remover</button>`:""}</div></div>`).join("")}
+  <button class="btn sec" onclick="addLine()">+ Adicionar produto</button>
+  <div class="tot"><span>Total</span><span id="tt">${brl(total())}</span></div>
+  <button class="btn" onclick="saveOrder()">Salvar pedido</button>
+  <button class="btn sec" onclick="closeSheet()">Cancelar</button>`);
+}
+const total=()=>draft.items.reduce((a,i)=>a+i.qty*i.price,0);
+function upd(){draft.items.forEach((it,i)=>{const e=$("#sb"+i);if(e)e.textContent=brl(it.qty*it.price)});$("#tt").textContent=brl(total())}
+function pickProd(i,pid){draft.items[i].pid=pid;draft.items[i].price=S.products.find(p=>p.id===pid).price;drawOrder()}
+function addLine(){const p=S.products[0];draft.items.push({pid:p.id,qty:1,price:p.price});drawOrder()}
+async function saveOrder(){
+  const c=S.clients.find(x=>x.id===draft.clientId);
+  const items=draft.items.filter(i=>i.qty>0).map(i=>{const p=S.products.find(x=>x.id===i.pid);return{produto_nome:p.name,unidade:p.unit,quantidade:i.qty,valor_unitario:i.price}});
+  if(!items.length)return alert("Informe a quantidade de ao menos um produto.");
+  const tot=Math.round(items.reduce((a,i)=>a+i.quantidade*i.valor_unitario,0)*100)/100;
+  busy(true);
+  try{
+    const r=must(await sb.from("pedidos").insert({cliente_id:c.id,cliente_nome:c.name,total:tot}).select("id").single());
+    const it=await sb.from("itens_pedido").insert(items.map(i=>({...i,pedido_id:r.data.id})));
+    if(it.error){await sb.from("pedidos").delete().eq("id",r.data.id);must(it)}
+    await done();
+  }catch(e){busy(false)}
+}
+function viewOrder(id){
+  const o=S.orders.find(x=>x.id===id);
+  sheet(`<h2>${esc(o.clientName)}</h2><p class="sub">${new Date(o.date).toLocaleString("pt-BR")}</p>
+  ${o.items.map(i=>`<div class="ln"><span>${i.qty} ${esc(i.unit)} × ${esc(i.name)}<br><small class="sub">${brl(i.price)} cada</small></span><b>${brl(i.qty*i.price)}</b></div>`).join("")}
+  <div class="tot"><span>Total</span><span>${brl(o.total)}</span></div>
+  <button class="btn del" onclick="del('orders','${o.id}')">Excluir pedido</button>
+  <button class="btn sec" onclick="closeSheet()">Fechar</button>`);
+}
+boot();
+</script>
+</body>
+</html>
