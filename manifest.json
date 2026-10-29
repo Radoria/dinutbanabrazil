@@ -1,0 +1,21 @@
+{
+  "name": "Controle de Vendas Bana Brazil",
+  "short_name": "Bananadas",
+  "description": "Aplicativo de controle de vendas de bananadas",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F1F3EC",
+  "theme_color": "#24452F",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
