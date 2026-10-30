@@ -1,27 +1,43 @@
-# Bananadas · Controle de vendas (Vercel + Supabase)
+# 🛒 Dinutbana Brazil - Controle de Vendas
 
-## 1. Banco de dados (Supabase)
-1. Crie uma conta em supabase.com e um projeto novo (guarde a senha do banco).
-2. Menu **SQL Editor** > New query > cole o conteúdo de `schema.sql` > **Run**.
-3. Menu **Authentication > Sign In / Providers > Email**: desligue **Confirm email**.
-4. Menu **Authentication > Users > Add user > Create new user**: cadastre seu e-mail e uma senha (repita para cada pessoa que for usar o app).
-5. Depois de cadastrar todos, volte em Sign In / Providers e desligue **Allow new users to sign up**. Assim ninguém de fora cria conta.
-6. Menu **Project Settings > API**: copie a **Project URL** e a chave **anon public**.
-7. Abra `config.js` e cole os dois valores.
+> Um sistema moderno e eficiente para gestão e controle de vendas, estoque e clientes.
 
-## 2. Hospedagem (Vercel)
-**Opção A, pelo terminal (mais rápida):**
-```
-npm i -g vercel
-cd bananadas-vercel
-vercel          # responda às perguntas (Framework: Other)
-vercel --prod   # publica de verdade
-```
-**Opção B, pelo GitHub:** envie esta pasta para um repositório, entre em vercel.com/new, importe o repositório, deixe o Framework em "Other", sem comando de build, e clique em Deploy.
+[![Em Desenvolvimento](https://img.shields.io/badge/Status-Em_Desenvolvimento-yellow)](#)
+[![Licença](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Pronto: a Vercel devolve um link. No celular, abra o link e use "Adicionar à tela inicial".
+O **Dinutbana Brazil** é uma aplicação focada em facilitar o dia a dia de pequenos e médios negócios, oferecendo um painel intuitivo para acompanhar o fluxo de caixa, gerenciar produtos e ter uma visão clara das vendas realizadas.
 
-## Arquivos
-- `index.html`: o app
-- `config.js`: URL e chave do Supabase
-- `schema.sql`: tabelas e regras de segurança
+---
+
+## ✨ Funcionalidades
+
+- **Dashboard Intuitivo:** Visão geral das vendas do dia, semana e mês.
+- **Gestão de Produtos:** Cadastro, edição e controle de níveis de estoque.
+- **Registro de Vendas:** Interface rápida para registrar novas saídas (PDV).
+- **Gestão de Clientes:** Histórico de compras e cadastro de clientes.
+- **Relatórios:** Geração de relatórios financeiros e de performance de produtos.
+
+## 🚀 Tecnologias Utilizadas
+
+*(Substitua pelas tecnologias reais do seu projeto)*
+- **Frontend:** React / Next.js / TailwindCSS
+- **Backend:** Node.js / Express / Python
+- **Banco de Dados:** PostgreSQL / MongoDB
+- **Autenticação:** JWT / Firebase
+
+---
+
+## 🛠️ Como rodar o projeto localmente
+
+Siga as instruções abaixo para rodar o projeto na sua máquina.
+
+### Pré-requisitos
+- [Node.js](https://nodejs.org/) (ou Python/Java, dependendo do backend)
+- Gerenciador de pacotes (NPM, Yarn, etc.)
+- Banco de dados rodando localmente ou em nuvem
+
+### Instalação
+
+1. Clone este repositório:
+```bash
+git clone [https://github.com/Radoria/dinutbanabrazil.git](https://github.com/Radoria/dinutbanabrazil.git)
